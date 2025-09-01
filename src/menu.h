@@ -36,6 +36,7 @@ void show_ble_menu(AppState* state);
 void show_ble_scanning_menu(AppState* state);
 void show_ble_capture_menu(AppState* state);
 void show_ble_attack_menu(AppState* state);
+void show_ble_chameleon_menu(AppState* state);
 
 void show_gps_menu(AppState* state);
 

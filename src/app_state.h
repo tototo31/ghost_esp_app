@@ -35,6 +35,7 @@ struct AppState {
     Submenu* ble_scanning_menu;
     Submenu* ble_capture_menu;
     Submenu* ble_attack_menu;
+    Submenu* ble_chameleon_menu;
     Submenu* gps_menu;
     VariableItemList* settings_menu;
     TextBox* text_box;
@@ -64,6 +65,7 @@ struct AppState {
     uint32_t last_ble_scanning_index;
     uint32_t last_ble_capture_index;
     uint32_t last_ble_attack_index;
+    uint32_t last_ble_chameleon_index;
     uint32_t last_gps_index;
     char* input_buffer;
     const char* uart_command;

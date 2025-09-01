@@ -105,6 +105,7 @@ int32_t ghost_esp_app(void* p) {
     state->ble_scanning_menu = submenu_alloc();
     state->ble_capture_menu = submenu_alloc();
     state->ble_attack_menu = submenu_alloc();
+    state->ble_chameleon_menu = submenu_alloc();
     state->gps_menu = submenu_alloc();
     state->text_box = text_box_alloc();
     state->settings_menu = variable_item_list_alloc();
@@ -209,6 +210,9 @@ int32_t ghost_esp_app(void* p) {
         if(state->ble_attack_menu)
             view_dispatcher_add_view(
                 state->view_dispatcher, 22, submenu_get_view(state->ble_attack_menu));
+        if(state->ble_chameleon_menu)
+            view_dispatcher_add_view(
+                state->view_dispatcher, 23, submenu_get_view(state->ble_chameleon_menu));
 
         view_dispatcher_set_custom_event_callback(
             state->view_dispatcher, settings_custom_event_callback);
@@ -283,6 +287,7 @@ int32_t ghost_esp_app(void* p) {
         if(state->ble_scanning_menu) view_dispatcher_remove_view(state->view_dispatcher, 20);
         if(state->ble_capture_menu) view_dispatcher_remove_view(state->view_dispatcher, 21);
         if(state->ble_attack_menu) view_dispatcher_remove_view(state->view_dispatcher, 22);
+        if(state->ble_chameleon_menu) view_dispatcher_remove_view(state->view_dispatcher, 23);
         FURI_LOG_I("Ghost_ESP", "Views removed.");
         view_dispatcher_free(state->view_dispatcher);
         state->view_dispatcher = NULL;
@@ -311,6 +316,7 @@ int32_t ghost_esp_app(void* p) {
     if(state && state->ble_scanning_menu) submenu_free(state->ble_scanning_menu);
     if(state && state->ble_capture_menu) submenu_free(state->ble_capture_menu);
     if(state && state->ble_attack_menu) submenu_free(state->ble_attack_menu);
+    if(state && state->ble_chameleon_menu) submenu_free(state->ble_chameleon_menu);
     if(state && state->gps_menu) submenu_free(state->gps_menu);
     if(state && state->main_menu) main_menu_free(state->main_menu);
     FURI_LOG_I("Ghost_ESP", "UI components freed.");

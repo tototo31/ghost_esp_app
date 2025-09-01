@@ -727,6 +727,102 @@ static const MenuCommand ble_attack_commands[] = {
     },
 };
 
+// Chameleon Ultra commands based on official documentation
+static const MenuCommand ble_chameleon_commands[] = {
+    {
+        .label = "Connect",
+        .command = "chameleon connect\n",
+        .details_header = "Connect to Chameleon",
+        .details_text = "Scan and connect to\n"
+                        "Chameleon Ultra device\n"
+                        "via Bluetooth.\n"
+                        "Must be done first.",
+    },
+    {
+        .label = "Device Status",
+        .command = "chameleon status\n",
+        .details_header = "Device Status",
+        .details_text = "Show connection status,\n"
+                        "device info, firmware\n"
+                        "version, and current\n"
+                        "operating mode.",
+    },
+    {
+        .label = "Battery Level",
+        .command = "chameleon battery\n",
+        .details_header = "Battery Check",
+        .details_text = "Display current battery\n"
+                        "level and charging\n"
+                        "status of Chameleon\n"
+                        "Ultra device.",
+    },
+    {
+        .label = "Reader Mode",
+        .command = "chameleon reader\n",
+        .details_header = "Reader Mode",
+        .details_text = "Switch to reader mode\n"
+                        "for scanning and\n"
+                        "analyzing cards.\n"
+                        "Required for scanning.",
+    },
+    {
+        .label = "Scan HF (13.56MHz)",
+        .command = "chameleon scanhf\n",
+        .details_header = "HF Card Scanner",
+        .details_text = "Quick scan for 13.56MHz\n"
+                        "cards (MIFARE, NTAG,\n"
+                        "ISO14443 Type A/B).\n"
+                        "Shows basic card info.",
+    },
+    {
+        .label = "Read HF Card",
+        .command = "chameleon readhf\n",
+        .details_header = "Full HF Analysis",
+        .details_text = "Comprehensive card\n"
+                        "analysis with automated\n"
+                        "attacks for MIFARE\n"
+                        "Classic and NTAG cards.",
+    },
+    {
+        .label = "NTAG Detect",
+        .command = "chameleon ntagdetect\n",
+        .details_header = "NTAG Detection",
+        .details_text = "Identify NTAG card type\n"
+                        "(213/215/216) and\n"
+                        "check protection\n"
+                        "status and memory.",
+    },
+    {
+        .label = "Save Card Dump",
+        .command = "chameleon savedump",
+        .needs_input = true,
+        .input_text = "Filename",
+        .details_header = "Save Card Data",
+        .details_text = "Save scanned card data\n"
+                        "to SD card with custom\n"
+                        "filename for later\n"
+                        "analysis.",
+    },
+    {
+        .label = "Emulator Mode",
+        .command = "chameleon emulator\n",
+        .details_header = "Emulator Mode",
+        .details_text = "Switch to emulator mode\n"
+                        "for card simulation\n"
+                        "and tag emulation.\n"
+                        "Load cards first.",
+    },
+    {
+        .label = "Disconnect",
+        .command = "chameleon disconnect\n",
+        .details_header = "Disconnect",
+        .details_text = "Safely disconnect from\n"
+                        "Chameleon Ultra device\n"
+                        "and free Bluetooth\n"
+                        "connection.",
+    },
+};
+
 static const MenuCommand ble_stop_command = {
     .label = "Stop All BLE",
     .command = "stop\n",
@@ -1177,6 +1273,9 @@ static void show_menu(
     case 22: // BLE Attack
         last_index = state->last_ble_attack_index;
         break;
+    case 23: // BLE Chameleon
+        last_index = state->last_ble_chameleon_index;
+        break;
     case 3: // GPS
         last_index = state->last_gps_index;
         break;
@@ -1271,6 +1370,16 @@ void show_ble_attack_menu(AppState* state) {
         22);
 }
 
+void show_ble_chameleon_menu(AppState* state) {
+    show_menu(
+        state,
+        ble_chameleon_commands,
+        COUNT_OF(ble_chameleon_commands),
+        "Chameleon RFID/NFC",
+        state->ble_chameleon_menu,
+        23);
+}
+
 void show_wifi_menu(AppState* state) {
     submenu_reset(state->wifi_menu);
     submenu_set_header(state->wifi_menu, "WiFi Commands");
@@ -1289,10 +1398,11 @@ void show_wifi_menu(AppState* state) {
 void show_ble_menu(AppState* state) {
     submenu_reset(state->ble_menu);
     submenu_set_header(state->ble_menu, "BLE Commands");
-    submenu_add_item(state->ble_menu, "Scanning & Detection", 0, submenu_callback, state);
-    submenu_add_item(state->ble_menu, "Packet Capture", 1, submenu_callback, state);
-    submenu_add_item(state->ble_menu, "Attacks & Spoofing", 2, submenu_callback, state);
-    submenu_add_item(state->ble_menu, ble_stop_command.label, 3, submenu_callback, state);
+    submenu_add_item(state->ble_menu, "Scanning & Detection >", 0, submenu_callback, state);
+    submenu_add_item(state->ble_menu, "Packet Capture >", 1, submenu_callback, state);
+    submenu_add_item(state->ble_menu, "Attacks & Spoofing >", 2, submenu_callback, state);
+    submenu_add_item(state->ble_menu, "Chameleon RFID/NFC >", 3, submenu_callback, state);
+    submenu_add_item(state->ble_menu, ble_stop_command.label, 4, submenu_callback, state);
     // Restore last selected BLE category
     submenu_set_selected_item(state->ble_menu, state->last_ble_category_index);
 
@@ -1369,6 +1479,12 @@ void handle_ble_menu(AppState* state, uint32_t index) {
             state->last_ble_attack_index = index;
         }
         break;
+    case 23: // Chameleon
+        if(index < COUNT_OF(ble_chameleon_commands)) {
+            command = &ble_chameleon_commands[index];
+            state->last_ble_chameleon_index = index;
+        }
+        break;
     }
 
     if(command) {
@@ -1441,6 +1557,9 @@ void submenu_callback(void* context, uint32_t index) {
             show_ble_attack_menu(state);
             break;
         case 3:
+            show_ble_chameleon_menu(state);
+            break;
+        case 4:
             execute_menu_command(state, &ble_stop_command);
             break;
         }
@@ -1451,6 +1570,7 @@ void submenu_callback(void* context, uint32_t index) {
     case 20:
     case 21:
     case 22:
+    case 23:
         handle_ble_menu(state, index);
         break;
     }
@@ -1623,7 +1743,7 @@ bool back_event_callback(void* context) {
         }
     }
     // Handle BLE sub-category menus
-    else if(current_view >= 20 && current_view <= 22) {
+    else if(current_view >= 20 && current_view <= 23) {
         show_ble_menu(state);
         submenu_set_selected_item(state->ble_menu, state->last_ble_category_index);
         state->current_view = 2;
@@ -1677,6 +1797,10 @@ bool back_event_callback(void* context) {
         case 22:
             show_ble_attack_menu(state);
             submenu_set_selected_item(state->ble_attack_menu, state->last_ble_attack_index);
+            break;
+        case 23:
+            show_ble_chameleon_menu(state);
+            submenu_set_selected_item(state->ble_chameleon_menu, state->last_ble_chameleon_index);
             break;
         case 3:
             show_gps_menu(state);
@@ -1747,6 +1871,11 @@ static bool menu_input_handler(InputEvent* event, void* context) {
         current_menu = state->ble_attack_menu;
         commands = ble_attack_commands;
         commands_count = COUNT_OF(ble_attack_commands);
+        break;
+    case 23:
+        current_menu = state->ble_chameleon_menu;
+        commands = ble_chameleon_commands;
+        commands_count = COUNT_OF(ble_chameleon_commands);
         break;
     case 3:
         current_menu = state->gps_menu;
